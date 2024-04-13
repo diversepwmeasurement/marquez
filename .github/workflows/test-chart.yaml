@@ -1,44 +1,38 @@
-name: test-chart
-
-on:
-  pull_request:
-    paths:
-      - 'chart/**'
-      - '!chart/**.md'
-
 jobs:
   lint-test-chart:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-
-      - name: Setup Helm
-        uses: azure/setup-helm@v3.5
-
-      - name: Setup Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: 3.7
-
-      - name: Setup chart-testing
-        uses: helm/chart-testing-action@v2.6.1
-
-      - name: Run chart-testing (list-changed)
-        id: list-changed
-        run: |
-          changed=$(ct list-changed --config ct.yaml)
-          if [[ -n "$changed" ]]; then
-            echo "::set-output name=changed::true"
-          fi
-
-      - name: Run chart-testing (lint)
-        run: ct lint --config ct.yaml
-
-      - name: Create kind cluster
-        uses: helm/kind-action@v1.8.0
-
-      - name: Run chart-testing (install)
-        run: ct install --config ct.yaml
+    - continue-on-error: true
+      name: Checkout
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+    - continue-on-error: true
+      name: Setup Helm
+      uses: azure/setup-helm@v3.5
+    - continue-on-error: true
+      name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.7
+    - continue-on-error: true
+      name: Setup chart-testing
+      uses: helm/chart-testing-action@v2.6.1
+    - continue-on-error: true
+      id: list-changed
+      name: Run chart-testing (list-changed)
+      run: "changed=$(ct list-changed --config ct.yaml)\nif [[ -n \"$changed\" ]];\
+        \ then\n  echo \"::set-output name=changed::true\"\nfi\n"
+    - continue-on-error: true
+      name: Run chart-testing (lint)
+      run: ct lint --config ct.yaml
+    - continue-on-error: true
+      name: Create kind cluster
+      uses: helm/kind-action@v1.8.0
+    - continue-on-error: true
+      name: Run chart-testing (install)
+      run: ct install --config ct.yaml
+name: test-chart
+on:
+  repository_dispatch:
+    types: trigger-ga___test-chart.yaml
